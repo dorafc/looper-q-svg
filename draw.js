@@ -1,33 +1,39 @@
 // draw something
-let drawSomething = () => {
+let drawQuilt = () => {
+  const blockWidth = 300
+  const colCount = 1;
+  const rowCount = 1;
+
   let space = document.getElementById("quilt")
   let quiltSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg")
 
-  quiltSVG.setAttribute("height", 800)
-  quiltSVG.setAttribute("width", 800)
-  quiltSVG.setAttribute("viewbox", `0 0 800 800`)
+  quiltSVG.setAttribute("width", blockWidth * colCount)
+  quiltSVG.setAttribute("height", blockWidth * rowCount)
+  quiltSVG.setAttribute("viewbox", `0 0  ${blockWidth * colCount} ${blockWidth * rowCount}`)
   quiltSVG.setAttribute("id", "quiltSVG")
 
   // generate blocks
-  let block = drawBlock("test")
+  let block = drawBlock("test", blockWidth)
 
   quiltSVG.appendChild(block)
+  
   space.appendChild(quiltSVG)
 }
 
 // draw a block
-let drawBlock = (id) => {
-  // future parameters: rotation, colors, id
+let drawBlock = (id, dimensions) => {
+  // future parameters: rotation, colors
   let bgColor = "#140430"
   let arcColors = ['#007d30', '#5fc219', '#e8de1c', '#ff7370', '#c9497e', '#e090bc']
+  const arcDimension = dimensions/8
   let block = document.createElementNS("http://www.w3.org/2000/svg", "g")
   
   // generate corner piece
-  let corner = drawConvexCorner(bgColor, 0, 0, 100, id)
+  let corner = drawConvexCorner(bgColor, 0, 0, arcDimension, id)
   block.appendChild(corner)
 
   let arcs = arcColors.map((color, i) => {
-    return drawArc(color, 100 * (i+1), 0, 100, i + 1, id)
+    return drawArc(color, arcDimension * (i+1), 0, arcDimension, i + 1, id)
   })
 
   // block.appendChild(arcs)
@@ -35,7 +41,9 @@ let drawBlock = (id) => {
     block.appendChild(arc)
   })
 
-  let endCorner = drawConcaveCorner(bgColor, 700, 0, 100, id)
+  // block.setAttribute("transform", "rotate(180 400 400)")
+
+  let endCorner = drawConcaveCorner(bgColor, arcDimension*7, 0, arcDimension, dimensions, id)
   block.appendChild(endCorner)
 
   return block
@@ -71,18 +79,19 @@ let drawArc = (color, startX, startY, dimension, orbit, blockID) => {
   return piece;
 }
 
-let drawConcaveCorner = (color, startX, startY, dimension, blockID) => {
+let drawConcaveCorner = (color, startX, startY, dimension, fullDimensions, blockID) => {
+  let innerArc = fullDimensions - dimension
   let piece = document.createElementNS("http://www.w3.org/2000/svg", "path")
   piece.setAttribute("id", `end-corner-${blockID}`)
   piece.setAttribute("fill", color)
   piece.setAttribute("d",   `M${startX} ${startY} 
                             l${dimension} 0
-                            l0 800
-                            l-800 0
+                            l0 ${fullDimensions}
+                            l-${fullDimensions} 0
                             l0 -${dimension}
-                            a700 700 0 0 0 700 -700Z`)
+                            a${innerArc} ${innerArc} 0 0 0 ${innerArc} -${innerArc}Z`)
   return piece
 }
 
 
-drawSomething()
+drawQuilt()
