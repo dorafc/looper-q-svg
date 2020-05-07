@@ -4,6 +4,9 @@ let drawQuilt = () => {
   const colCount = 1;
   const rowCount = 1;
 
+  const bgColor = "#140430"
+  const arcColors = ['#007d30', '#5fc219', '#e8de1c', '#ff7370', '#c9497e', '#e090bc'] 
+
   let space = document.getElementById("quilt")
   let quiltSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg")
 
@@ -13,7 +16,7 @@ let drawQuilt = () => {
   quiltSVG.setAttribute("id", "quiltSVG")
 
   // generate blocks
-  let block = drawBlock("test", blockWidth)
+  let block = drawBlock("test", 0, 0, blockWidth, bgColor, arcColors, 0)
 
   quiltSVG.appendChild(block)
   
@@ -21,19 +24,17 @@ let drawQuilt = () => {
 }
 
 // draw a block
-let drawBlock = (id, dimensions) => {
-  // future parameters: rotation, colors
-  let bgColor = "#140430"
-  let arcColors = ['#007d30', '#5fc219', '#e8de1c', '#ff7370', '#c9497e', '#e090bc']
+let drawBlock = (id, startX, startY, dimensions, bgColor, arcColors, rotation) => {
+  // future parameters: rotation
   const arcDimension = dimensions/8
   let block = document.createElementNS("http://www.w3.org/2000/svg", "g")
   
   // generate corner piece
-  let corner = drawConvexCorner(bgColor, 0, 0, arcDimension, id)
+  let corner = drawConvexCorner(bgColor, startX, startY, arcDimension, id)
   block.appendChild(corner)
 
   let arcs = arcColors.map((color, i) => {
-    return drawArc(color, arcDimension * (i+1), 0, arcDimension, i + 1, id)
+    return drawArc(color, arcDimension * (i+1) + startX, startY, arcDimension, i + 1, id)
   })
 
   // block.appendChild(arcs)
@@ -41,9 +42,11 @@ let drawBlock = (id, dimensions) => {
     block.appendChild(arc)
   })
 
-  // block.setAttribute("transform", "rotate(180 400 400)")
+  if (rotation !== 0){
+    block.setAttribute("transform", `rotate(${rotation} ${dimensions/2} ${dimensions/2})`)
+  }
 
-  let endCorner = drawConcaveCorner(bgColor, arcDimension*7, 0, arcDimension, dimensions, id)
+  let endCorner = drawConcaveCorner(bgColor, startX + arcDimension*7, startY, arcDimension, dimensions, id)
   block.appendChild(endCorner)
 
   return block
