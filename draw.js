@@ -1,12 +1,17 @@
 // draw something
 let drawQuilt = () => {
+  // quilt dimensions
   const blockWidth = 300
-  const colCount = 1;
-  const rowCount = 1;
+  const colCount = 2;
+  const rowCount = 2;
+  const rotations = [[180,270],[0,90]]
+  const colorDirection = [[1, 1],[0, 0]]
 
+  // color pallatte
   const bgColor = "#140430"
   const arcColors = ['#007d30', '#5fc219', '#e8de1c', '#ff7370', '#c9497e', '#e090bc'] 
 
+  // set up <svg>
   let space = document.getElementById("quilt")
   let quiltSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg")
 
@@ -16,9 +21,30 @@ let drawQuilt = () => {
   quiltSVG.setAttribute("id", "quiltSVG")
 
   // generate blocks
-  let block = drawBlock("test", 0, 0, blockWidth, bgColor, arcColors, 0)
+  let blocks = []
+  for (let r = 0; r < rowCount; r++){
+    for (let c = 0; c < colCount; c++){
+      // clone colors to prevent reversing the original colors
+      let arcColorsDir = [...arcColors]
 
-  quiltSVG.appendChild(block)
+      if (colorDirection[r][c] === 0){
+        arcColorsDir = arcColorsDir.reverse()
+      }
+
+      blocks.push(drawBlock(`test${r}${c}`, 
+                              blockWidth * c, 
+                              blockWidth * r, 
+                              blockWidth, 
+                              bgColor, 
+                              arcColorsDir, 
+                              rotations[r][c]))
+    }
+  }
+
+  // generate blocks
+  blocks.forEach((block, i) => {
+    quiltSVG.appendChild(block)
+  })
   
   space.appendChild(quiltSVG)
 }
@@ -43,7 +69,7 @@ let drawBlock = (id, startX, startY, dimensions, bgColor, arcColors, rotation) =
   })
 
   if (rotation !== 0){
-    block.setAttribute("transform", `rotate(${rotation} ${dimensions/2} ${dimensions/2})`)
+    block.setAttribute("transform", `rotate(${rotation} ${dimensions/2 + startX} ${dimensions/2 + startY})`)
   }
 
   let endCorner = drawConcaveCorner(bgColor, startX + arcDimension*7, startY, arcDimension, dimensions, id)
