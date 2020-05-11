@@ -8,7 +8,8 @@ let drawQuilt = () => {
   const colorDirection = [[1, 1],[0, 0]]      // 1 current order, 0 reversed order
 
   // color pallatte
-  const bgColor = "url(#background)"
+  const bgColor = "#140430"
+  const bgPattern = "url(#background)"
   const arcColors = ['#007d30', '#5fc219', '#e8de1c', '#ff7370', '#c9497e', '#e090bc'] 
 
   // set up <svg>
@@ -16,10 +17,10 @@ let drawQuilt = () => {
   let quiltSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg")
 
   // figure out pattern stuff
-  // include in <defs>
   let defs = document.createElementNS("http://www.w3.org/2000/svg", "defs")
-
-  defs.appendChild(generatePattern("background"))
+  let patternDimension = 150
+  let pattern = generatePattern("background", bgColor, patternDimension)
+  defs.appendChild(pattern)
   quiltSVG.appendChild(defs)
 
   quiltSVG.setAttribute("width", blockWidth * colCount)
@@ -42,7 +43,7 @@ let drawQuilt = () => {
                               blockWidth * c, 
                               blockWidth * r, 
                               blockWidth, 
-                              bgColor, 
+                              bgPattern, 
                               arcColorsDir, 
                               rotations[r][c]))
     }
@@ -57,35 +58,65 @@ let drawQuilt = () => {
 }
 
 // generate a pattern for the background fabric
-let generatePattern = (patternName) => {
+let generatePattern = (patternName, bgColor, dimension) => {
   console.log("generating a pattern")
   let pattern = document.createElementNS("http://www.w3.org/2000/svg", "pattern")
   pattern.setAttribute("id", `${patternName}`)
   pattern.setAttribute("x", "0")
   pattern.setAttribute("y", "0")
-  pattern.setAttribute("width", "60")   // % of total box size
-  pattern.setAttribute("height", "60")   // % of total box size
+  pattern.setAttribute("width", dimension)   // % of total box size
+  pattern.setAttribute("height", dimension)   // % of total box size
   pattern.setAttribute("patternUnits", "userSpaceOnUse")
 
-  let bgColor = document.createElementNS("http://www.w3.org/2000/svg", "rect")
-  bgColor.setAttribute("fill", "#140430")
-  bgColor.setAttribute("x", "0")
-  bgColor.setAttribute("y", "0")
-  bgColor.setAttribute("width", "60")
-  bgColor.setAttribute("height", "60")
+  let bgRect = document.createElementNS("http://www.w3.org/2000/svg", "rect")
+  bgRect.setAttribute("fill", bgColor)
+  bgRect.setAttribute("x", "0")
+  bgRect.setAttribute("y", "0")
+  bgRect.setAttribute("width", dimension)
+  bgRect.setAttribute("height", dimension)
 
-  let dot = document.createElementNS("http://www.w3.org/2000/svg", "rect")
-  dot.setAttribute("fill","white")
-  dot.setAttribute("x", "0")
-  dot.setAttribute("y", "0")
-  dot.setAttribute("width", "15")
-  dot.setAttribute("height", "15")
+  let xSize = 5
 
-  pattern.appendChild(bgColor)
-  pattern.appendChild(dot)
+  // let cross = drawX(Math.random() * (dimension - xSize), Math.random() * (dimension - xSize), xSize)
+  // let cross2 = drawX(Math.random() * (dimension - xSize), Math.random() * (dimension - xSize), xSize)
+  let crosses = []
+  for (let i = 0; i < dimension / 15; i++){
+    let cross = drawX(Math.random() * (dimension - xSize), Math.random() * (dimension - xSize), xSize)
+    crosses.push(cross)
+  }
+  console.log(crosses)
+
+  pattern.appendChild(bgRect)
+  crosses.forEach(cross => {
+    pattern.appendChild(cross)
+  })
+
   // create an 'x'
   console.log(pattern)
   return pattern;
+}
+
+let drawX = (startX, startY, size) => {
+  let cross = document.createElementNS("http://www.w3.org/2000/svg", "g")
+  let line1 = document.createElementNS("http://www.w3.org/2000/svg", "line")
+  let line2 = document.createElementNS("http://www.w3.org/2000/svg", "line")
+  line1.setAttribute("x1", startX)
+  line1.setAttribute("x2", startX + size)
+  line1.setAttribute("y1", startY)
+  line1.setAttribute("y2", startY + size)
+  line1.setAttribute("stroke", "white")
+
+  line2.setAttribute("x1", startX + size)
+  line2.setAttribute("x2", startX)
+  line2.setAttribute("y1", startY)
+  line2.setAttribute("y2", startY + size)
+  line2.setAttribute("stroke", "white")
+
+  cross.appendChild(line1)
+  cross.appendChild(line2)
+
+  console.log(cross)
+  return cross
 }
 
 // draw a block
