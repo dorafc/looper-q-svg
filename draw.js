@@ -5,15 +5,22 @@ let drawQuilt = () => {
   const colCount = 2;
   const rowCount = 2;
   const rotations = [[180,270],[0,90]]
-  const colorDirection = [[1, 1],[0, 0]]
+  const colorDirection = [[1, 1],[0, 0]]      // 1 current order, 0 reversed order
 
   // color pallatte
-  const bgColor = "#140430"
+  const bgColor = "url(#background)"
   const arcColors = ['#007d30', '#5fc219', '#e8de1c', '#ff7370', '#c9497e', '#e090bc'] 
 
   // set up <svg>
   let space = document.getElementById("quilt")
   let quiltSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg")
+
+  // figure out pattern stuff
+  // include in <defs>
+  let defs = document.createElementNS("http://www.w3.org/2000/svg", "defs")
+
+  defs.appendChild(generatePattern("background"))
+  quiltSVG.appendChild(defs)
 
   quiltSVG.setAttribute("width", blockWidth * colCount)
   quiltSVG.setAttribute("height", blockWidth * rowCount)
@@ -47,6 +54,38 @@ let drawQuilt = () => {
   })
   
   space.appendChild(quiltSVG)
+}
+
+// generate a pattern for the background fabric
+let generatePattern = (patternName) => {
+  console.log("generating a pattern")
+  let pattern = document.createElementNS("http://www.w3.org/2000/svg", "pattern")
+  pattern.setAttribute("id", `${patternName}`)
+  pattern.setAttribute("x", "0")
+  pattern.setAttribute("y", "0")
+  pattern.setAttribute("width", "60")   // % of total box size
+  pattern.setAttribute("height", "60")   // % of total box size
+  pattern.setAttribute("patternUnits", "userSpaceOnUse")
+
+  let bgColor = document.createElementNS("http://www.w3.org/2000/svg", "rect")
+  bgColor.setAttribute("fill", "#140430")
+  bgColor.setAttribute("x", "0")
+  bgColor.setAttribute("y", "0")
+  bgColor.setAttribute("width", "60")
+  bgColor.setAttribute("height", "60")
+
+  let dot = document.createElementNS("http://www.w3.org/2000/svg", "rect")
+  dot.setAttribute("fill","white")
+  dot.setAttribute("x", "0")
+  dot.setAttribute("y", "0")
+  dot.setAttribute("width", "15")
+  dot.setAttribute("height", "15")
+
+  pattern.appendChild(bgColor)
+  pattern.appendChild(dot)
+  // create an 'x'
+  console.log(pattern)
+  return pattern;
 }
 
 // draw a block
