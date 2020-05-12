@@ -1,38 +1,42 @@
-// draw something
+/* ----------
+* DRAW QUILT FUNCTION 
+* --------- */
 let drawQuilt = () => {
   // quilt dimensions
   const blockWidth = 300
   const colCount = 2;
   const rowCount = 2;
-  const rotations = [[180,270],[0,90]]
+
+  // orientation of the quilt blocks
+  const rotations = [[180,270],[0,90]]        // order of the quilt block rotations
   const colorDirection = [[1, 1],[0, 0]]      // 1 current order, 0 reversed order
 
-  // color pallatte
+  // color pallatte + fabric
   const bgColor = "#140430"
   const bgPattern = "url(#background)"
+  let patternDimension = 150
+  let xSize = 3
   const arcColors = ['#007d30', '#5fc219', '#e8de1c', '#ff7370', '#c9497e', '#e090bc'] 
 
-  // set up <svg>
+  // set up <svg> and set proper attributes
   let space = document.getElementById("quilt")
   let quiltSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg")
-
-  // figure out pattern stuff
-  let defs = document.createElementNS("http://www.w3.org/2000/svg", "defs")
-  let patternDimension = 150
-  let pattern = generatePattern("background", bgColor, patternDimension)
-  defs.appendChild(pattern)
-  quiltSVG.appendChild(defs)
-
   quiltSVG.setAttribute("width", blockWidth * colCount)
   quiltSVG.setAttribute("height", blockWidth * rowCount)
   quiltSVG.setAttribute("viewbox", `0 0  ${blockWidth * colCount} ${blockWidth * rowCount}`)
   quiltSVG.setAttribute("id", "quiltSVG")
 
-  // generate blocks
+  // generate the background fabric pattern and add to the <defs>
+  let defs = document.createElementNS("http://www.w3.org/2000/svg", "defs")
+  let pattern = generatePattern("background", bgColor, patternDimension, xSize)
+  defs.appendChild(pattern)
+  quiltSVG.appendChild(defs)
+
+  // generate array or block groups
   let blocks = []
   for (let r = 0; r < rowCount; r++){
     for (let c = 0; c < colCount; c++){
-      // clone colors to prevent reversing the original colors
+      // clone arc colors to prevent reversing the original colors
       let arcColorsDir = [...arcColors]
 
       if (colorDirection[r][c] === 0){
@@ -49,17 +53,21 @@ let drawQuilt = () => {
     }
   }
 
-  // generate blocks
+  // add blocks to quilt
   blocks.forEach((block, i) => {
     quiltSVG.appendChild(block)
   })
   
+  // add quilt to page
   space.appendChild(quiltSVG)
 }
 
-// generate a pattern for the background fabric
-let generatePattern = (patternName, bgColor, dimension) => {
-  console.log("generating a pattern")
+/* ----------
+* SET UP THE PATTERN FOR BACKGROUND FABRIC 
+* --------- */
+let generatePattern = (patternName, bgColor, dimension, xSize) => {
+  
+  // set up <pattern>
   let pattern = document.createElementNS("http://www.w3.org/2000/svg", "pattern")
   pattern.setAttribute("id", `${patternName}`)
   pattern.setAttribute("x", "0")
@@ -68,6 +76,7 @@ let generatePattern = (patternName, bgColor, dimension) => {
   pattern.setAttribute("height", dimension)   // % of total box size
   pattern.setAttribute("patternUnits", "userSpaceOnUse")
 
+  // add a rectangle with the background color to the pattern
   let bgRect = document.createElementNS("http://www.w3.org/2000/svg", "rect")
   bgRect.setAttribute("fill", bgColor)
   bgRect.setAttribute("x", "0")
@@ -75,27 +84,26 @@ let generatePattern = (patternName, bgColor, dimension) => {
   bgRect.setAttribute("width", dimension)
   bgRect.setAttribute("height", dimension)
 
-  let xSize = 5
-
-  // let cross = drawX(Math.random() * (dimension - xSize), Math.random() * (dimension - xSize), xSize)
-  // let cross2 = drawX(Math.random() * (dimension - xSize), Math.random() * (dimension - xSize), xSize)
+  // set up 'x's in the background with randomized locations
+  // number of x's is dependent on the size of the pattern
   let crosses = []
-  for (let i = 0; i < dimension / 15; i++){
+  for (let i = 0; i < dimension / 5; i++){
     let cross = drawX(Math.random() * (dimension - xSize), Math.random() * (dimension - xSize), xSize)
     crosses.push(cross)
   }
-  console.log(crosses)
 
+  // add pattern elements to the pattern
   pattern.appendChild(bgRect)
   crosses.forEach(cross => {
     pattern.appendChild(cross)
   })
 
-  // create an 'x'
-  console.log(pattern)
   return pattern;
 }
 
+/* ----------
+* DRAW X FOR THE PATTERN GENERATION 
+* --------- */
 let drawX = (startX, startY, size) => {
   let cross = document.createElementNS("http://www.w3.org/2000/svg", "g")
   let line1 = document.createElementNS("http://www.w3.org/2000/svg", "line")
@@ -115,20 +123,24 @@ let drawX = (startX, startY, size) => {
   cross.appendChild(line1)
   cross.appendChild(line2)
 
-  console.log(cross)
   return cross
 }
 
-// draw a block
+/* ----------
+* CREATE SHAPES FOR A BLOCK 
+* --------- */
 let drawBlock = (id, startX, startY, dimensions, bgColor, arcColors, rotation) => {
-  // future parameters: rotation
+  // calculate width of the arc
   const arcDimension = dimensions/8
+
+  // create group for the block
   let block = document.createElementNS("http://www.w3.org/2000/svg", "g")
   
   // generate corner piece
   let corner = drawConvexCorner(bgColor, startX, startY, arcDimension, id)
   block.appendChild(corner)
 
+  // generate curved pieces
   let arcs = arcColors.map((color, i) => {
     return drawArc(color, arcDimension * (i+1) + startX, startY, arcDimension, i + 1, id)
   })
@@ -138,18 +150,22 @@ let drawBlock = (id, startX, startY, dimensions, bgColor, arcColors, rotation) =
     block.appendChild(arc)
   })
 
+  // create end corner piece
+  let endCorner = drawConcaveCorner(bgColor, startX + arcDimension*7, startY, arcDimension, dimensions, id)
+  block.appendChild(endCorner)
+
+  // rotate the block
   if (rotation !== 0){
     block.setAttribute("transform", `rotate(${rotation} ${dimensions/2 + startX} ${dimensions/2 + startY})`)
   }
-
-  let endCorner = drawConcaveCorner(bgColor, startX + arcDimension*7, startY, arcDimension, dimensions, id)
-  block.appendChild(endCorner)
 
   return block
 }
 
 
-// draw the curved corner piece
+/* ----------
+* DRAW SMALL CORNER PIECE 
+* --------- */
 let drawConvexCorner = (color, startX, startY, dimension, blockID) => {
   let piece = document.createElementNS("http://www.w3.org/2000/svg", "path")
   piece.setAttribute("id", `corner-${blockID}`)
@@ -166,6 +182,9 @@ let drawConvexCorner = (color, startX, startY, dimension, blockID) => {
   return piece
 }
 
+/* ----------
+* DRAW ARC PIECE 
+* --------- */
 let drawArc = (color, startX, startY, dimension, orbit, blockID) => {
   let piece = document.createElementNS("http://www.w3.org/2000/svg", "path")
   piece.setAttribute("id", `arc-${blockID}`)
@@ -178,6 +197,9 @@ let drawArc = (color, startX, startY, dimension, orbit, blockID) => {
   return piece;
 }
 
+/* ----------
+* DRAW LARGE CORNER PIECE
+* --------- */
 let drawConcaveCorner = (color, startX, startY, dimension, fullDimensions, blockID) => {
   let innerArc = fullDimensions - dimension
   let piece = document.createElementNS("http://www.w3.org/2000/svg", "path")
