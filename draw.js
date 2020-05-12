@@ -1,3 +1,10 @@
+// update the type of quilting pattern visible
+let quiltState = "none";
+const quiltOpt = document.getElementById("quilt-opt")
+quiltOpt.addEventListener('change', (event) =>{
+  quiltState = event.target.value
+})
+
 /* ----------
 * DRAW QUILT FUNCTION 
 * --------- */
@@ -186,15 +193,38 @@ let drawConvexCorner = (color, startX, startY, dimension, blockID) => {
 * DRAW ARC PIECE 
 * --------- */
 let drawArc = (color, startX, startY, dimension, orbit, blockID) => {
+  let pieceGroup = document.createElementNS("http://www.w3.org/2000/svg", "g")
   let piece = document.createElementNS("http://www.w3.org/2000/svg", "path")
   piece.setAttribute("id", `arc-${blockID}`)
   piece.setAttribute("fill", color)
+  let quiltLine1 = drawArcQuilting(startX+5, startY, (dimension * orbit) + 5, blockID)
+  let quiltLine2 = drawArcQuilting(startX+dimension-5, startY, (dimension * (orbit+1)) - 5, blockID)
   piece.setAttribute("d", `M${startX} ${startY}
                           l${dimension} 0
                           a${dimension * (1 + orbit)} ${dimension * (1 + orbit)} 0 0 1 -${dimension * (1 + orbit)} ${dimension * (1 + orbit)}
                           l0 -${dimension}
                           a${dimension * orbit} ${dimension * orbit} 0 0 0 ${dimension * orbit} -${dimension * orbit}Z`)
-  return piece;
+  
+  pieceGroup.appendChild(piece)
+  pieceGroup.appendChild(quiltLine1)
+  pieceGroup.appendChild(quiltLine2)
+  return pieceGroup;
+}
+
+/* ----------
+* DRAW ARC QUILTING 
+* --------- */
+
+let drawArcQuilting = (startX, startY, dimension, blockID) => {
+  let arcLine = document.createElementNS("http://www.w3.org/2000/svg", "path")
+  arcLine.setAttribute("id", `arc-${blockID}-quilt1`)
+  arcLine.setAttribute("stroke", "white")
+  arcLine.setAttribute("fill", "none")
+  arcLine.setAttribute("opacity", .6)
+  arcLine.setAttribute("stroke-dasharray", "2 3")
+  arcLine.setAttribute("d", `M${startX} ${startY} a${dimension} ${dimension} 0 0 1 -${dimension} ${dimension}`)
+
+  return arcLine;
 }
 
 /* ----------
