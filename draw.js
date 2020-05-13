@@ -16,7 +16,7 @@ quiltOpt.addEventListener('change', (event) =>{
 * --------- */
 let drawQuilt = (quiltOpt) => {
   // quilt dimensions
-  const blockWidth = 300
+  const blockWidth = 400
   const colCount = 2;
   const rowCount = 2;
 
@@ -74,7 +74,7 @@ let drawQuilt = (quiltOpt) => {
 
   // render quilting
   if (quiltOpt !== "none"){
-    let quilt = drawQuiltOpt1(300, "test")
+    let quilt = drawQuiltOpt1(blockWidth, "test")
     quiltSVG.appendChild(quilt)
   }
 
@@ -246,13 +246,68 @@ let drawQuiltOpt1 = (width, quiltID) => {
     arcLines.push(drawArcQuiltSeam(((i+1) * dimension) - offset, width, quiltID))
   }
   arcLines.forEach(arcLine => {quiltDesign.appendChild(arcLine)})
+
+  // test drawing radial line
+  let numLines = 6
+  let line = drawRadialSeam(0, 0, numLines, width, 0, quiltID)
+  let line2 = drawRadialSeam(width, 0, numLines, width, 90, quiltID)
+  let line3 = drawRadialSeam(0, width, numLines, width, 270, quiltID)
+  let line4 = drawRadialSeam(width, width, numLines, width, 180, quiltID)
+  quiltDesign.appendChild(line)
+  quiltDesign.appendChild(line2)
+  quiltDesign.appendChild(line3)
+  quiltDesign.appendChild(line4)
   return quiltDesign
+}
+
+/* ----------
+* DRAW RADIAL QUILT SEAMS 
+* --------- */
+let drawRadialSeam = (startX, startY, numLines, width, rotation, radID) => {
+  let radLines = document.createElementNS("http://www.w3.org/2000/svg", "g")
+  radLines.setAttribute("stroke", "white")
+  radLines.setAttribute("fill", "none")
+  radLines.setAttribute("opacity", .6)
+  radLines.setAttribute("stroke-dasharray", "2 3")
+
+  let lineOffset = width / (numLines + 1)
+
+  let radLine = document.createElementNS("http://www.w3.org/2000/svg", "line")
+  radLine.setAttribute("id", `rad-${radID}-quiltSeam`)
+  radLine.setAttribute("x1", startX)
+  radLine.setAttribute("y1", startY)
+  radLine.setAttribute("x2", startX + width)
+  radLine.setAttribute("y2", startY + width)
+
+  radLines.appendChild(radLine)
+
+  for (let i = 0; i < numLines; i++){
+    let lineX = document.createElementNS("http://www.w3.org/2000/svg", "line")
+    lineX.setAttribute("id", `rad-${radID + i}-quiltSeam`)
+    lineX.setAttribute("x1", startX)
+    lineX.setAttribute("y1", startY)
+    lineX.setAttribute("x2", startX + lineOffset * (i+1))
+    lineX.setAttribute("y2", startY + width)
+
+    let lineY = document.createElementNS("http://www.w3.org/2000/svg", "line")
+    lineY.setAttribute("id", `rad-${radID + i}-quiltSeam`)
+    lineY.setAttribute("x1", startX)
+    lineY.setAttribute("y1", startY)
+    lineY.setAttribute("x2", startX + width)
+    lineY.setAttribute("y2", startY + lineOffset * (i+1))
+
+    radLines.appendChild(lineX)
+    radLines.appendChild(lineY)
+  }
+
+  radLines.setAttribute("transform", `rotate(${rotation}, ${startX + width/2}, ${startY + width/2})`)
+
+  return radLines
 }
 
 /* ----------
 * DRAW ARC QUILT SEAM 
 * --------- */
-
 let drawArcQuiltSeam = (radius, blockDimension, blockID) => {
   let arcLine = document.createElementNS("http://www.w3.org/2000/svg", "path")
   arcLine.setAttribute("id", `arc-${blockID}-quiltSeam`)
