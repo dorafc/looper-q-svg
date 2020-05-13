@@ -3,12 +3,18 @@ let quiltState = "none";
 const quiltOpt = document.getElementById("quilt-opt")
 quiltOpt.addEventListener('change', (event) =>{
   quiltState = event.target.value
+  // if (event.target.value === "opt1"){
+  //   drawQuilt()
+  // } else {
+  //   drawQuilt()
+  // }
+  drawQuilt(event.target.value)
 })
 
 /* ----------
 * DRAW QUILT FUNCTION 
 * --------- */
-let drawQuilt = () => {
+let drawQuilt = (quiltOpt) => {
   // quilt dimensions
   const blockWidth = 300
   const colCount = 2;
@@ -27,6 +33,7 @@ let drawQuilt = () => {
 
   // set up <svg> and set proper attributes
   let space = document.getElementById("quilt")
+  space.innerHTML = ""
   let quiltSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg")
   quiltSVG.setAttribute("width", blockWidth * colCount)
   quiltSVG.setAttribute("height", blockWidth * rowCount)
@@ -64,7 +71,13 @@ let drawQuilt = () => {
   blocks.forEach((block, i) => {
     quiltSVG.appendChild(block)
   })
-  
+
+  // render quilting
+  if (quiltOpt !== "none"){
+    let quilt = drawQuiltOpt1(300, "test")
+    quiltSVG.appendChild(quilt)
+  }
+
   // add quilt to page
   space.appendChild(quiltSVG)
 }
@@ -193,36 +206,65 @@ let drawConvexCorner = (color, startX, startY, dimension, blockID) => {
 * DRAW ARC PIECE 
 * --------- */
 let drawArc = (color, startX, startY, dimension, orbit, blockID) => {
-  let pieceGroup = document.createElementNS("http://www.w3.org/2000/svg", "g")
   let piece = document.createElementNS("http://www.w3.org/2000/svg", "path")
   piece.setAttribute("id", `arc-${blockID}`)
   piece.setAttribute("fill", color)
-  let quiltLine1 = drawArcQuilting(startX+5, startY, (dimension * orbit) + 5, blockID)
-  let quiltLine2 = drawArcQuilting(startX+dimension-5, startY, (dimension * (orbit+1)) - 5, blockID)
+  let quiltLine1 = drawArcQuiltSeam(startX+5, startY, (dimension * orbit) + 5, blockID)
+  let quiltLine2 = drawArcQuiltSeam(startX+dimension-5, startY, (dimension * (orbit+1)) - 5, blockID)
   piece.setAttribute("d", `M${startX} ${startY}
                           l${dimension} 0
                           a${dimension * (1 + orbit)} ${dimension * (1 + orbit)} 0 0 1 -${dimension * (1 + orbit)} ${dimension * (1 + orbit)}
                           l0 -${dimension}
                           a${dimension * orbit} ${dimension * orbit} 0 0 0 ${dimension * orbit} -${dimension * orbit}Z`)
   
-  pieceGroup.appendChild(piece)
-  pieceGroup.appendChild(quiltLine1)
-  pieceGroup.appendChild(quiltLine2)
-  return pieceGroup;
+  return piece;
 }
 
 /* ----------
 * DRAW ARC QUILTING 
 * --------- */
+let drawArcQuiltBlock = (startX, startY, dimension, rotation, blockID) => {
+  let arcQuiltBlock = document.createElementNS("http://www.w3.org/2000/svg", "g")
+  arcQuiltBlock.setAttribute("id", `arc-${blockID}-quilt`)
+  if (rotation !== 0){
+    arcQuiltBlock.setAttribute()
+  }
+}
 
-let drawArcQuilting = (startX, startY, dimension, blockID) => {
+/* ----------
+* DRAW QUILTING DESIGN 
+* --------- */
+let drawQuiltOpt1 = (width, quiltID) => {
+  let quiltDesign = document.createElementNS("http://www.w3.org/2000/svg", "g")
+  let dimension = width / 8         // dimension of the "arc" piece
+  let offset = 7                    // distance of the line from the seam
+
+  // generate array of lines based on offset
+  let arcLines = []
+  for (let i = 1; i <= 6; i++){
+    arcLines.push(drawArcQuiltSeam((i * dimension) + offset, width, quiltID))
+    arcLines.push(drawArcQuiltSeam(((i+1) * dimension) - offset, width, quiltID))
+  }
+  arcLines.forEach(arcLine => {quiltDesign.appendChild(arcLine)})
+  return quiltDesign
+}
+
+/* ----------
+* DRAW ARC QUILT SEAM 
+* --------- */
+
+let drawArcQuiltSeam = (radius, blockDimension, blockID) => {
   let arcLine = document.createElementNS("http://www.w3.org/2000/svg", "path")
-  arcLine.setAttribute("id", `arc-${blockID}-quilt1`)
+  arcLine.setAttribute("id", `arc-${blockID}-quiltSeam`)
   arcLine.setAttribute("stroke", "white")
   arcLine.setAttribute("fill", "none")
   arcLine.setAttribute("opacity", .6)
   arcLine.setAttribute("stroke-dasharray", "2 3")
-  arcLine.setAttribute("d", `M${startX} ${startY} a${dimension} ${dimension} 0 0 1 -${dimension} ${dimension}`)
+  arcLine.setAttribute("d", `M0 ${blockDimension + radius} 
+                              a${radius} ${radius} 0 0 0 ${radius} -${radius}
+                              a${blockDimension - radius} ${blockDimension - radius} 0 0 1 ${blockDimension - radius} ${-blockDimension + radius}
+                              a${blockDimension - radius} ${blockDimension - radius} 0 0 1 ${blockDimension - radius} ${blockDimension - radius}
+                              a${radius} ${radius} 0 0 0 ${radius} ${radius}`)
 
   return arcLine;
 }
@@ -245,4 +287,4 @@ let drawConcaveCorner = (color, startX, startY, dimension, fullDimensions, block
 }
 
 
-drawQuilt()
+drawQuilt("opt1")
