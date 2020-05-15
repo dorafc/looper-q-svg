@@ -21,8 +21,8 @@ let drawQuilt = (quiltOpt) => {
   // color pallatte + fabric
   const bgColor = "#140430"
   const bgPattern = "url(#background)"
-  let patternDimension = 150
-  let xSize = 3
+  let patternDimension = blockWidth / 2
+  let xSize = blockWidth / 100
   const arcColors = ['#007d30', '#5fc219', '#e8de1c', '#ff7370', '#c9497e', '#e090bc'] 
 
   // set up <svg> and set proper attributes
@@ -144,7 +144,7 @@ let generatePattern = (patternName, bgColor, dimension, xSize) => {
   // set up 'x's in the background with randomized locations
   // number of x's is dependent on the size of the pattern
   let crosses = []
-  for (let i = 0; i < dimension / 5; i++){
+  for (let i = 0; i < dimension / (xSize * 2); i++){
     let cross = drawX(Math.random() * (dimension - xSize), Math.random() * (dimension - xSize), xSize)
     crosses.push(cross)
   }
@@ -325,7 +325,7 @@ let drawQuiltOpt2 = (width, quiltID) => {
 
   // test drawing radial line
   let radGroup = document.createElementNS("http://www.w3.org/2000/svg", "g")
-  let numLines = 7
+  let numLines = 15
   let line = drawRadialSeam(0, 0, numLines, width, 0, quiltID)
   let line2 = drawRadialSeam(width, 0, numLines, width, 90, quiltID)
   let line3 = drawRadialSeam(0, width, numLines, width, 180, quiltID)
