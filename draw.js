@@ -2,12 +2,6 @@
 let quiltState = "none";
 const quiltOpt = document.getElementById("quilt-opt")
 quiltOpt.addEventListener('change', (event) =>{
-  quiltState = event.target.value
-  // if (event.target.value === "opt1"){
-  //   drawQuilt()
-  // } else {
-  //   drawQuilt()
-  // }
   drawQuilt(event.target.value)
 })
 
@@ -77,9 +71,14 @@ let drawQuilt = (quiltOpt) => {
   })
 
   // render quilting
+  let quilts = new Map()
+  quilts.set("opt1", drawQuiltOpt1)
+  quilts.set("opt2", drawQuiltOpt2)
+  quilts.set("opt3", drawQuiltOpt3)
   if (quiltOpt !== "none"){
-    let quilt = drawQuiltOpt1(blockWidth, "test")
-    quiltSVG.appendChild(quilt)
+    
+    let quilting = quilts.get(quiltOpt)
+    quiltSVG.appendChild(quilting(blockWidth, "test"))
   }
 
   // add quilt to page
@@ -283,8 +282,76 @@ let drawQuiltOpt1 = (width, quiltID) => {
     arcLines.push(drawArcQuiltSeam((i * dimension), width, quiltID))
     arcLines.push(drawArcQuiltSeam((i * dimension) + offset, width, quiltID))
     // arcLines.push(drawArcQuiltSeam((i * dimension) + offset + offset, width, quiltID))
+    // arcLines.push(drawArcQuiltSeam((i * dimension) + (dimension/2), width, quiltID))
+    // arcLines.push(drawArcQuiltSeam(((i+1) * dimension) - offset - offset, width, quiltID))
+    arcLines.push(drawArcQuiltSeam(((i+1) * dimension) - offset, width, quiltID))
+  }
+  arcLines.push(drawArcQuiltSeam((7 * dimension), width, quiltID))
+  arcLines.forEach(arcLine => {quiltDesign.appendChild(arcLine)})
+
+  // test drawing radial line
+  let radGroup = document.createElementNS("http://www.w3.org/2000/svg", "g")
+  let numLines = 10
+  let line = drawRadialSeam(0, 0, numLines, width, 0, quiltID)
+  let line2 = drawRadialSeam(width, 0, numLines, width, 90, quiltID)
+  let line3 = drawRadialSeam(0, width, numLines, width, 270, quiltID)
+  let line4 = drawRadialSeam(width, width, numLines, width, 180, quiltID)
+  radGroup.appendChild(line)
+  radGroup.appendChild(line2)
+  radGroup.appendChild(line3)
+  radGroup.appendChild(line4)
+  radGroup.setAttribute("clip-path", "url(#clipy)")
+  quiltDesign.appendChild(radGroup)
+  return quiltDesign
+}
+
+let drawQuiltOpt2 = (width, quiltID) => {
+  let quiltDesign = document.createElementNS("http://www.w3.org/2000/svg", "g")
+  let dimension = width / 8         // dimension of the "arc" piece
+  let offset = 7                    // distance of the line from the seam
+
+  // generate array of lines based on offset
+  let arcLines = []
+  for (let i = 1; i <= 6; i++){
+    arcLines.push(drawArcQuiltSeam((i * dimension), width, quiltID))
+    // arcLines.push(drawArcQuiltSeam((i * dimension) + offset, width, quiltID))
+    // arcLines.push(drawArcQuiltSeam((i * dimension) + offset + offset, width, quiltID))
     arcLines.push(drawArcQuiltSeam((i * dimension) + (dimension/2), width, quiltID))
     // arcLines.push(drawArcQuiltSeam(((i+1) * dimension) - offset - offset, width, quiltID))
+    // arcLines.push(drawArcQuiltSeam(((i+1) * dimension) - offset, width, quiltID))
+  }
+  arcLines.push(drawArcQuiltSeam((7 * dimension), width, quiltID))
+  arcLines.forEach(arcLine => {quiltDesign.appendChild(arcLine)})
+
+  // test drawing radial line
+  let radGroup = document.createElementNS("http://www.w3.org/2000/svg", "g")
+  let numLines = 7
+  let line = drawRadialSeam(0, 0, numLines, width, 0, quiltID)
+  let line2 = drawRadialSeam(width, 0, numLines, width, 90, quiltID)
+  let line3 = drawRadialSeam(0, width, numLines, width, 180, quiltID)
+  let line4 = drawRadialSeam(width, width, numLines, width, 270, quiltID)
+  radGroup.appendChild(line)
+  radGroup.appendChild(line2)
+  radGroup.appendChild(line3)
+  radGroup.appendChild(line4)
+  // radGroup.setAttribute("clip-path", "url(#clipy)")
+  quiltDesign.appendChild(radGroup)
+  return quiltDesign
+}
+
+let drawQuiltOpt3 = (width, quiltID) => {
+  let quiltDesign = document.createElementNS("http://www.w3.org/2000/svg", "g")
+  let dimension = width / 8         // dimension of the "arc" piece
+  let offset = 7                    // distance of the line from the seam
+
+  // generate array of lines based on offset
+  let arcLines = []
+  for (let i = 1; i <= 6; i++){
+    arcLines.push(drawArcQuiltSeam((i * dimension), width, quiltID))
+    arcLines.push(drawArcQuiltSeam((i * dimension) + offset, width, quiltID))
+    arcLines.push(drawArcQuiltSeam((i * dimension) + offset + offset, width, quiltID))
+    // arcLines.push(drawArcQuiltSeam((i * dimension) + (dimension/2), width, quiltID))
+    arcLines.push(drawArcQuiltSeam(((i+1) * dimension) - offset - offset, width, quiltID))
     arcLines.push(drawArcQuiltSeam(((i+1) * dimension) - offset, width, quiltID))
   }
   arcLines.push(drawArcQuiltSeam((7 * dimension), width, quiltID))
@@ -396,4 +463,4 @@ let drawConcaveCorner = (color, startX, startY, dimension, fullDimensions, block
 }
 
 
-drawQuilt("opt1")
+drawQuilt("none")
