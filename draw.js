@@ -44,6 +44,10 @@ let drawQuilt = (quiltOpt) => {
   let defs = document.createElementNS("http://www.w3.org/2000/svg", "defs")
   let pattern = generatePattern("background", bgColor, patternDimension, xSize)
   defs.appendChild(pattern)
+
+  // create a clipping path for the arc
+  let clipArc = generateArcClipPath(blockWidth, "clipy")
+  defs.appendChild(clipArc)
   quiltSVG.appendChild(defs)
 
   // generate array or block groups
@@ -80,6 +84,40 @@ let drawQuilt = (quiltOpt) => {
 
   // add quilt to page
   space.appendChild(quiltSVG)
+}
+
+/* ----------
+* GENERATE CLIP PATH FOR ARCS
+* --------- */
+let generateArcClipPath = (dimension, clipID) => {
+  let clipPath = document.createElementNS("http://www.w3.org/2000/svg", "clipPath")
+  let topPath = document.createElementNS("http://www.w3.org/2000/svg", "path")
+  let bottomPath = document.createElementNS("http://www.w3.org/2000/svg", "path")
+  clipPath.setAttribute("id", clipID)
+  let shortDim = dimension / 8
+  let longDim = dimension - shortDim
+
+  topPath.setAttribute("d", `M0 ${dimension+shortDim} 
+                              a${shortDim} ${shortDim} 0 0 0 ${shortDim} -${shortDim}
+                              a${longDim} ${longDim} 0 0 1 ${longDim} -${longDim}
+                              a${longDim} ${longDim} 0 0 1 ${longDim} ${longDim}
+                              a${shortDim} ${shortDim} 0 0 0 ${shortDim} ${shortDim}
+                              l0 -${dimension+shortDim}
+                              l-${dimension*2} 0Z
+                              `)
+
+  bottomPath.setAttribute("d", `M0 ${dimension+longDim} 
+                              a${longDim} ${longDim} 0 0 0 ${longDim} -${longDim}
+                              a${shortDim} ${shortDim} 0 0 1 ${shortDim} -${shortDim}
+                              a${shortDim} ${shortDim} 0 0 1 ${shortDim} ${shortDim}
+                              a${longDim} ${longDim} 0 0 0 ${longDim} ${longDim}
+                              l0 ${shortDim}
+                              l-${dimension*2} 0Z
+                              `)
+  clipPath.appendChild(topPath)
+  clipPath.appendChild(bottomPath)
+
+  return clipPath;
 }
 
 /* ----------
@@ -242,21 +280,29 @@ let drawQuiltOpt1 = (width, quiltID) => {
   // generate array of lines based on offset
   let arcLines = []
   for (let i = 1; i <= 6; i++){
+    arcLines.push(drawArcQuiltSeam((i * dimension), width, quiltID))
     arcLines.push(drawArcQuiltSeam((i * dimension) + offset, width, quiltID))
+    // arcLines.push(drawArcQuiltSeam((i * dimension) + offset + offset, width, quiltID))
+    arcLines.push(drawArcQuiltSeam((i * dimension) + (dimension/2), width, quiltID))
+    // arcLines.push(drawArcQuiltSeam(((i+1) * dimension) - offset - offset, width, quiltID))
     arcLines.push(drawArcQuiltSeam(((i+1) * dimension) - offset, width, quiltID))
   }
+  arcLines.push(drawArcQuiltSeam((7 * dimension), width, quiltID))
   arcLines.forEach(arcLine => {quiltDesign.appendChild(arcLine)})
 
   // test drawing radial line
-  let numLines = 6
+  let radGroup = document.createElementNS("http://www.w3.org/2000/svg", "g")
+  let numLines = 7
   let line = drawRadialSeam(0, 0, numLines, width, 0, quiltID)
   let line2 = drawRadialSeam(width, 0, numLines, width, 90, quiltID)
-  let line3 = drawRadialSeam(0, width, numLines, width, 270, quiltID)
-  let line4 = drawRadialSeam(width, width, numLines, width, 180, quiltID)
-  quiltDesign.appendChild(line)
-  quiltDesign.appendChild(line2)
-  quiltDesign.appendChild(line3)
-  quiltDesign.appendChild(line4)
+  let line3 = drawRadialSeam(0, width, numLines, width, 180, quiltID)
+  let line4 = drawRadialSeam(width, width, numLines, width, 270, quiltID)
+  radGroup.appendChild(line)
+  radGroup.appendChild(line2)
+  radGroup.appendChild(line3)
+  radGroup.appendChild(line4)
+  radGroup.setAttribute("clip-path", "url(#clipy)")
+  quiltDesign.appendChild(radGroup)
   return quiltDesign
 }
 
@@ -279,7 +325,15 @@ let drawRadialSeam = (startX, startY, numLines, width, rotation, radID) => {
   radLine.setAttribute("x2", startX + width)
   radLine.setAttribute("y2", startY + width)
 
+  let radLine2 = document.createElementNS("http://www.w3.org/2000/svg", "line")
+  radLine2.setAttribute("id", `rad-${radID}-edgeSeam`)
+  radLine2.setAttribute("x1", startX)
+  radLine2.setAttribute("y1", startY)
+  radLine2.setAttribute("x2", startX)
+  radLine2.setAttribute("y2", startY + width)
+
   radLines.appendChild(radLine)
+  radLines.appendChild(radLine2)
 
   for (let i = 0; i < numLines; i++){
     let lineX = document.createElementNS("http://www.w3.org/2000/svg", "line")
